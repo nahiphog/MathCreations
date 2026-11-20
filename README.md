@@ -1,5 +1,13 @@
 # MathCreations
 
+## Stage 6 course slides
+
+Browse the 36-week course at https://nahiphog.github.io/MathCreations/stage6/.
+The buildless `stage6/` directory contains 144 lesson slides, weekly practice with
+revealable answers, assessment guidance, and a teaching guide. Navigate with the
+week menu or Previous/Next; reading position and completion are stored locally.
+Edit course content in `stage6/course-data.js`; no build is required.
+
 Mathematics practice with Venn diagrams, an exact matrix inverse solver, and printable geometry construction worksheets.
 
 ## GitHub Pages
