@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore the angle between clock hands, sampled every second across a complete 12-hour cycle.">
+  <title>Clock angles · MathCreations</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><a href="../index.html#topics" class="brand">MathCreations<span> / Clock angles</span></a><span class="tag">AN INTERACTIVE EXPLORATION</span></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">TIME & GEOMETRY</p><h1>Two hands. Eleven cycles.</h1><p class="subtitle">Follow the smaller angle between the clock hands, second by second.</p></div><button id="download" class="primary">Download all data · CSV</button></div>
+    <div class="workspace">
+      <aside class="panel clock-panel">
+        <div class="section-label">THE SELECTED SECOND</div>
+        <svg id="clock" viewBox="0 0 260 260" role="img" aria-label="Analog clock"><circle cx="130" cy="130" r="119" fill="#fff" stroke="#d8e2e8"/><g id="ticks"></g><path id="sector" fill="#d7efeb"/><g id="numbers"></g><line id="hour" x1="130" y1="141" x2="130" y2="67" stroke="#213849" stroke-width="7" stroke-linecap="round"/><line id="minute" x1="130" y1="145" x2="130" y2="37" stroke="#007f75" stroke-width="4" stroke-linecap="round"/><circle cx="130" cy="130" r="6" fill="#213849"/></svg>
+        <div class="legend"><span><i class="hour-key"></i>Hour hand</span><span><i></i>Minute hand</span></div>
+        <output id="time-display" class="time">12:00:00 am</output><output id="angle-display" class="angle">0.000°</output><div class="muted">minor angle</div>
+        <div class="play-controls"><button id="play" class="primary">Play</button><label>Speed <select id="speed"><option value="1">1×</option><option value="60">60×</option><option value="600" selected>600×</option><option value="3600">3,600×</option></select></label></div>
+        <label class="input-label" for="seconds">Seconds after midnight</label><input id="seconds" type="number" min="0" max="43200" step="1" value="0">
+        <div class="presets"><button data-time="0">12 am</button><button data-time="10800">3 am</button><button data-time="21600">6 am</button><button data-time="43200">12 pm</button></div>
+      </aside>
+      <section class="panel graph-panel" aria-labelledby="graph-title">
+        <div class="graph-heading"><div><h2 id="graph-title">Minor angle over time</h2><p><span class="line-key"></span>43,201 samples · 1-second intervals</p></div><div class="toolbar"><button id="zoom-in" aria-label="Zoom in on selected time">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="reset">Reset view</button></div></div>
+        <div class="plot"><canvas id="graph" tabindex="0" aria-label="Minor angle graph. Left and right arrow keys select a second. Use plus and minus to zoom; use the buttons below to pan.">The minor angle forms eleven triangular waves between 0 and 180 degrees. Use the time controls to inspect each sample or download the data.</canvas><div id="tooltip" hidden></div></div>
+        <div class="graph-footer"><span>Scroll to zoom · drag to pan · click to inspect</span><div><button id="pan-left" aria-label="Pan earlier">Earlier</button><button id="pan-right" aria-label="Pan later">Later</button></div></div>
+        <div class="scrubber"><label for="timeline">Explore the 12-hour cycle <output id="sample-label">Sample 1 of 43,201</output></label><input id="timeline" type="range" min="0" max="43200" step="1" value="0"><div><span>12 am · midnight</span><span>6 am</span><span>12 pm · noon</span></div></div>
+      </section>
+    </div>
+    <section class="notes" aria-label="Understanding the graph"><article><span class="section-label">THE MODEL</span><h2>A continuous clock</h2><p>Both hands move smoothly. The minute hand travels at 0.1°/s; the hour hand at 1/120°/s. We record their smaller separation at every whole second, including midnight and noon.</p></article><article><span class="section-label">THE EQUATION</span><h2>θ(t) = min(r, 360 − r)</h2><p>Here <b>r = (11t/120) mod 360</b>, with <b>t</b> in seconds after midnight and angles in degrees. The smaller angle always lies between 0° and 180°.</p></article><article><span class="section-label">WHAT TO NOTICE</span><h2>A meeting every ~65 min</h2><p>The pattern repeats every 43,200/11 seconds. There are 11 full cycles. Most exact meetings and 180° peaks fall between recorded seconds; the line connects the samples. Zoom in to see individual points.</p></article></section>
+    <footer>12:00:00 am — 12:00:00 pm <span>Built for mathematical curiosity.</span></footer>
+  </main>
+  <script src="model.js"></script><script src="app.js"></script>
+</body>
+</html>
