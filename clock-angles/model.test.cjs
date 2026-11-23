@@ -4,6 +4,26 @@ const fs = require('node:fs');
 const path = require('node:path');
 const m = require('./model.js');
 
+test('angle finder solves both branches, sorted and without duplicate endpoints', () => {
+  for (const a of [0, 30, 60, 90, 120, 150, 180, 42.5, 0.001, 179.999]) {
+    const matches=m.occurrences(a);
+    assert.equal(matches.length,a===0?12:a===180?11:22);
+    matches.forEach((match,i)=>{
+      assert.ok(match.seconds>=0 && match.seconds<=43200);
+      assert.ok(Math.abs(m.angle(match.seconds)-a)<1e-9);
+      if(i)assert.ok(matches[i-1].seconds<match.seconds);
+      const [n,d='1']=match.exact.split('/');
+      assert.ok(Math.abs(Number(n)/Number(d)-match.seconds)<1e-9);
+    });
+    assert.equal(matches.filter(v=>v.wholeSecond).length,m.samples.filter(v=>Math.abs(v-a)<1e-12).length);
+  }
+  assert.equal(m.occurrences(30)[0].exact,'3600/11');
+  assert.equal(m.time(m.occurrences(30)[0].seconds),'12:05:27.273 am');
+  assert.equal(m.occurrences(0).at(-1).seconds,43200);
+  assert.ok(m.occurrences(180).some(v=>v.seconds===21600 && v.wholeSecond));
+  for(const bad of ['', -1, 181, NaN, Infinity, 'invalid']) assert.throws(()=>m.occurrences(bad),RangeError);
+});
+
 test('every second agrees with independently calculated hand positions', () => {
   assert.equal(m.samples.length, 43201);
   for (let t = 0; t <= 43200; t++) {

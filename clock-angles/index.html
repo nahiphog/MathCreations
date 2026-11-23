@@ -12,7 +12,7 @@
     <div class="intro"><div><p class="eyebrow">TIME & GEOMETRY</p><h1>Two hands. Eleven cycles.</h1><p class="subtitle">Follow the smaller angle between the clock hands, second by second.</p></div><button id="download" class="primary">Download all data · CSV</button></div>
     <div class="workspace">
       <aside class="panel clock-panel">
-        <div class="section-label">THE SELECTED SECOND</div>
+        <div class="section-label">THE SELECTED TIME</div>
         <svg id="clock" viewBox="0 0 260 260" role="img" aria-label="Analog clock"><circle cx="130" cy="130" r="119" fill="#fff" stroke="#d8e2e8"/><g id="ticks"></g><path id="sector" fill="#d7efeb"/><g id="numbers"></g><line id="hour" x1="130" y1="141" x2="130" y2="67" stroke="#213849" stroke-width="7" stroke-linecap="round"/><line id="minute" x1="130" y1="145" x2="130" y2="37" stroke="#007f75" stroke-width="4" stroke-linecap="round"/><circle cx="130" cy="130" r="6" fill="#213849"/></svg>
         <div class="legend"><span><i class="hour-key"></i>Hour hand</span><span><i></i>Minute hand</span></div>
         <output id="time-display" class="time">12:00:00 am</output><output id="angle-display" class="angle">0.000°</output><div class="muted">minor angle</div>
@@ -27,6 +27,12 @@
         <div class="scrubber"><label for="timeline">Explore the 12-hour cycle <output id="sample-label">Sample 1 of 43,201</output></label><input id="timeline" type="range" min="0" max="43200" step="1" value="0"><div><span>12 am · midnight</span><span>6 am</span><span>12 pm · noon</span></div></div>
       </section>
     </div>
+    <section class="panel finder" aria-labelledby="finder-title">
+      <div class="finder-heading"><div><p class="eyebrow">FIND AN ANGLE</p><h2 id="finder-title">When do the hands make this angle?</h2><p>Find every occurrence from midnight to noon, including times between recorded seconds.</p></div><form id="angle-form"><label for="target-angle">Minor angle (degrees)</label><div><input id="target-angle" type="number" min="0" max="180" step="any" value="30" required><button class="primary" type="submit">Find times</button></div></form></div>
+      <div class="angle-presets" aria-label="Common angles"><button data-angle="0">0°</button><button data-angle="30">30°</button><button data-angle="60">60°</button><button data-angle="90">90°</button><button data-angle="120">120°</button><button data-angle="150">150°</button><button data-angle="180">180°</button></div>
+      <p id="match-summary" role="status"></p><p class="finder-help">Clock times are rounded to the nearest millisecond. Exact elapsed seconds are shown as fractions. Select a time to see the clock at that exact instant; purple markers show all matches on the graph.</p>
+      <div class="match-scroll"><table><thead><tr><th scope="col">Occurrence</th><th scope="col">Time of day</th><th scope="col">Exact seconds after midnight</th><th scope="col">In the 1-second dataset?</th></tr></thead><tbody id="matches"></tbody></table></div>
+    </section>
     <section class="notes" aria-label="Understanding the graph"><article><span class="section-label">THE MODEL</span><h2>A continuous clock</h2><p>Both hands move smoothly. The minute hand travels at 0.1°/s; the hour hand at 1/120°/s. We record their smaller separation at every whole second, including midnight and noon.</p></article><article><span class="section-label">THE EQUATION</span><h2>θ(t) = min(r, 360 − r)</h2><p>Here <b>r = (11t/120) mod 360</b>, with <b>t</b> in seconds after midnight and angles in degrees. The smaller angle always lies between 0° and 180°.</p></article><article><span class="section-label">WHAT TO NOTICE</span><h2>A meeting every ~65 min</h2><p>The pattern repeats every 43,200/11 seconds. There are 11 full cycles. Most exact meetings and 180° peaks fall between recorded seconds; the line connects the samples. Zoom in to see individual points.</p></article></section>
     <footer>12:00:00 am — 12:00:00 pm <span>Built for mathematical curiosity.</span></footer>
   </main>

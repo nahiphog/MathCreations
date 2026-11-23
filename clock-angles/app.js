@@ -1,10 +1,11 @@
 (() => {
   'use strict';
-  const {END, samples, time, csv} = ClockModel;
+  const {END, samples, time, csv, angle, occurrences} = ClockModel;
   const $ = id => document.getElementById(id);
   const canvas = $('graph'), ctx = canvas.getContext('2d');
   let selected = 0, lo = 0, hi = END, playing = false, lastFrame = 0, playTime = 0, animationFrame = 0;
   let width = 800, height = 400, hover = null, drag = null;
+  let targetAngle = 30, matches = occurrences(30);
   const margin = {left:52, right:18, top:30, bottom:50};
   const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
   const x = t => margin.left + (t-lo)/(hi-lo)*(width-margin.left-margin.right);
@@ -13,20 +14,22 @@
   const point = (a,r) => [130+r*Math.sin(a*Math.PI/180),130-r*Math.cos(a*Math.PI/180)];
   $('ticks').innerHTML = Array.from({length:60},(_,i)=>{const a=point(i*6,i%5?113:108),b=point(i*6,117);return `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${i%5?'#bacad2':'#617582'}" stroke-width="${i%5?1:2}"/>`;}).join('');
   $('numbers').innerHTML = Array.from({length:12},(_,i)=>{const p=point((i+1)*30,94);return `<text x="${p[0]}" y="${p[1]}" text-anchor="middle" dominant-baseline="central" fill="#617582" font-size="14">${i+1}</text>`;}).join('');
-  function select(t) {
-    selected = clamp(Math.round(t),0,END);
-    $('timeline').value = $('seconds').value = selected;
+  function select(t, exact = false) {
+    selected = clamp(exact ? t : Math.round(t),0,END);
+    $('timeline').value = Math.round(selected);
+    $('seconds').step = Number.isInteger(selected) ? '1' : 'any';
+    $('seconds').value = selected;
     $('time-display').textContent = time(selected);
-    $('angle-display').textContent = samples[selected].toFixed(3)+'°';
-    $('sample-label').textContent = `Sample ${(selected+1).toLocaleString('en-US')} of 43,201`;
-    $('timeline').setAttribute('aria-valuetext',`${time(selected)}, ${samples[selected].toFixed(3)} degrees`);
+    $('angle-display').textContent = angle(selected).toFixed(3)+'°';
+    $('sample-label').textContent = Number.isInteger(selected) ? `Sample ${(selected+1).toLocaleString('en-US')} of 43,201` : 'Exact match · between 1-second samples';
+    $('timeline').setAttribute('aria-valuetext',`${time(Math.round(selected))}, ${angle(Math.round(selected)).toFixed(3)} degrees`);
     const h = selected/120%360, m = selected/10%360;
     $('hour').setAttribute('transform',`rotate(${h} 130 130)`);
     $('minute').setAttribute('transform',`rotate(${m} 130 130)`);
     let delta = (m-h+360)%360; if (delta>180) delta-=360;
     const a=point(h,49),b=point(h+delta,49);
     $('sector').setAttribute('d',Math.abs(delta)<1e-9?'':`M130 130 L${a} A49 49 0 0 ${delta>=0?1:0} ${b} Z`);
-    $('clock').setAttribute('aria-label',`${time(selected)}. Smaller angle ${samples[selected].toFixed(3)} degrees.`);
+    $('clock').setAttribute('aria-label',`${time(selected)}. Smaller angle ${angle(selected).toFixed(3)} degrees.`);
     draw();
   }
   function draw() {
@@ -43,7 +46,9 @@
     const start=Math.max(0,Math.floor(lo)),end=Math.min(END,Math.ceil(hi));
     for(let t=start;t<=end;t++){if(t===start)ctx.moveTo(x(t),y(samples[t]));else ctx.lineTo(x(t),y(samples[t]));}ctx.stroke();
     if(span<=180){ctx.fillStyle='#007f75';for(let t=start;t<=end;t++){ctx.beginPath();ctx.arc(x(t),y(samples[t]),2.7,0,2*Math.PI);ctx.fill();}}
-    if(selected>=lo&&selected<=hi){ctx.strokeStyle='#d79b2e';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x(selected),margin.top);ctx.lineTo(x(selected),height-margin.bottom);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#d79b2e';ctx.beginPath();ctx.arc(x(selected),y(samples[selected]),5,0,2*Math.PI);ctx.fill();}
+    ctx.strokeStyle='#8853aa';ctx.lineWidth=1;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(margin.left,y(targetAngle));ctx.lineTo(width-margin.right,y(targetAngle));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#8853aa';for(const match of matches){if(match.seconds<lo||match.seconds>hi)continue;ctx.beginPath();ctx.arc(x(match.seconds),y(targetAngle),4,0,Math.PI*2);ctx.fill();}
+    if(selected>=lo&&selected<=hi){ctx.strokeStyle='#d79b2e';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x(selected),margin.top);ctx.lineTo(x(selected),height-margin.bottom);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#d79b2e';ctx.beginPath();ctx.arc(x(selected),y(angle(selected)),5,0,2*Math.PI);ctx.fill();}
     if(hover!==null){ctx.fillStyle='#213849';ctx.beginPath();ctx.arc(x(hover),y(samples[hover]),4,0,2*Math.PI);ctx.fill();}ctx.restore();
     $('zoom-in').disabled=span<=10; $('zoom-out').disabled=span>=END;
     $('pan-left').disabled=lo<=0; $('pan-right').disabled=hi>=END;
@@ -75,6 +80,20 @@
   canvas.addEventListener('pointerleave',()=>{hideTooltip();draw();});
   canvas.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','+','-','Home','End'].includes(e.key)){e.preventDefault();if(e.key==='+')zoom(.5);else if(e.key==='-')zoom(2);else{manual(e.key==='Home'?0:e.key==='End'?END:selected+(e.key==='ArrowRight'?1:-1)*(e.shiftKey?60:1));if(selected<lo||selected>hi)view(selected-(hi-lo)/2,hi-lo);}}});
   $('download').onclick=()=>{const url=URL.createObjectURL(new Blob([csv()],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='clock-minor-angles-12-hours.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+  function findTimes() {
+    if (!$('target-angle').reportValidity()) return;
+    targetAngle = Number($('target-angle').value);
+    matches = occurrences(targetAngle);
+    const sampled = matches.filter(m=>m.wholeSecond).length;
+    $('match-summary').textContent = `${matches.length} occurrences of ${targetAngle}° · ${sampled} at whole seconds · midnight and noon included when matching.`;
+    $('matches').innerHTML = matches.map((m,i)=>`<tr><td>${i+1}</td><td><button data-match="${i}" aria-label="Show occurrence ${i+1} at ${time(m.seconds)}">${time(m.seconds)}</button></td><td>${m.exact} s</td><td>${m.wholeSecond?'Yes':'No · between samples'}</td></tr>`).join('');
+    document.querySelectorAll('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.angle)===targetAngle)));
+    draw();
+  }
+  $('angle-form').addEventListener('submit',e=>{e.preventDefault();findTimes();});
+  document.querySelectorAll('[data-angle]').forEach(b=>b.addEventListener('click',()=>{$('target-angle').value=b.dataset.angle;findTimes();}));
+  $('matches').addEventListener('click',e=>{const button=e.target.closest('[data-match]');if(!button)return;stop();select(matches[Number(button.dataset.match)].seconds,true);if(selected<lo||selected>hi)view(selected-(hi-lo)/2,hi-lo);document.querySelectorAll('[data-match]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));$('clock').scrollIntoView({block:'center',behavior:'smooth'});});
   new ResizeObserver(()=>{const box=canvas.getBoundingClientRect();width=box.width;height=box.height;const dpr=window.devicePixelRatio||1;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();}).observe(canvas);
   select(0);
+  findTimes();
 })();
