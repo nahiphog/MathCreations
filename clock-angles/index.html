@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Explore the angle between clock hands, sampled every second across a complete 12-hour cycle.">
   <title>Clock angles · MathCreations</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
   <header><a href="../index.html#topics" class="brand">MathCreations<span> / Clock angles</span></a><span class="tag">AN INTERACTIVE EXPLORATION</span></header>
@@ -36,6 +36,6 @@
     <section class="notes" aria-label="Understanding the graph"><article><span class="section-label">THE MODEL</span><h2>A continuous clock</h2><p>Both hands move smoothly. The minute hand travels at 0.1°/s; the hour hand at 1/120°/s. We record their smaller separation at every whole second, including midnight and noon.</p></article><article><span class="section-label">THE EQUATION</span><h2>θ(t) = min(r, 360 − r)</h2><p>Here <b>r = (11t/120) mod 360</b>, with <b>t</b> in seconds after midnight and angles in degrees. The smaller angle always lies between 0° and 180°.</p></article><article><span class="section-label">WHAT TO NOTICE</span><h2>A meeting every ~65 min</h2><p>The pattern repeats every 43,200/11 seconds. There are 11 full cycles. Most exact meetings and 180° peaks fall between recorded seconds; the line connects the samples. Zoom in to see individual points.</p></article></section>
     <footer>12:00:00 am — 12:00:00 pm <span>Built for mathematical curiosity.</span></footer>
   </main>
-  <script src="model.js"></script><script src="app.js"></script>
+  <script src="model.js?v=2"></script><script src="app.js?v=2"></script>
 </body>
 </html>
